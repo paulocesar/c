@@ -1,20 +1,32 @@
 const fs = require('fs');
 const readline = require('readline');
 
-const ADD = 0;
-const REMOVE = 1;
+const timeMachineStatus = { ADD: 0, REMOVE: 1 };
+const fileMode = { INPUT: 0, READ: 1, SELECT: 2 };
 
 class File {
     constructor(filepath) {
         this.filepath = filepath;
 
-        this.x = 0;
-        this.y = 0;
+        this._mode = fileMode.INPUT;
+
+        this._x = 0;
+        this._y = 0;
+
+        this._sx = 0;
+        this._sy = 0;
 
         this.lines = [ '' ];
 
         this.timeMachine = [ ];
         this.timeMachineIdx = 0;
+    }
+
+    setMode(m) {
+        if (!Object.values(fileMode).includes(m)) {
+            throw new Error(`invalid file mode ${m}`);
+        }
+        this._mode = m;
     }
 
     async load() {
@@ -33,7 +45,7 @@ class File {
     }
 
     debug() {
-        console.log({ x: this.x, y: this.y });
+        console.log(this.position());
         console.log(this.lines);
         console.log({
             timeMachineIdx: this.timeMachineIdx,
@@ -50,24 +62,83 @@ class File {
             return false;
         }
 
-        this.x = pos.x;
-        this.y = pos.y;
+        if (this._mode === fileMode.SELECT) {
+            this._setSelectPosition(pos);
+            return true;
+        }
+
+        this._setPosition(pos);
         return true;
     }
 
+    position() {
+        return {
+            x: this._x, y: this._y,
+            sx: this._sx, sy: this._sy
+        };
+    }
+
+    _setPosition(pos) {
+        this._x = this._sx = pos.x;
+        this._y = this._sy = pos.y;
+    }
+
+    _setSelectPosition(pos) {
+        this._sx = pos.x;
+        this._sy = pos.y;
+    }
+
     input(chars) {
+        if (!this._mode === fileMode.INPUT) { return; }
+
         for (const c of chars) {
-            const pos = { x: this.x, y: this.y };
+            const pos = this.position();
             if (c === '\b') {
                 const removed = this._removeChar();
                 if (removed === null) { continue; }
-                this._addTimeMachine(REMOVE, pos, removed);
+                this._addTimeMachine(timeMachineStatus.REMOVE, pos, removed);
                 continue;
             }
 
             this._addChar(c);
-            this._addTimeMachine(ADD, pos, c);
+            this._addTimeMachine(timeMachineStatus.ADD, pos, c);
         }
+    }
+
+    selectionArea() {
+        const p = this.position();
+        let begin = { x: p.x, y: p.y };
+        let end = { x: p.sx, y: p.sy };
+
+        const mustInvert = begin.x > end.x || (begin.x === end.x &&
+            begin.y > end.y);
+
+        if (mustInvert) {
+            const t = begin;
+            begin = end;
+            end = t;
+        }
+
+        return { begin, end };
+    }
+
+    selection() {
+        const p = this.position();
+        if (p.x === p.sx && p.y === p.sy) { return ''; }
+
+        const { begin, end } = this.selectionArea();
+
+        let buffer = '';
+
+        for (let x = begin.x; x <= end.x; x++) {
+            const l = this.lines[x];
+            let startY = x === begin.x ? begin.y : 0;
+            let endY = x === end.x ? end.y : l.length - 1;
+            buffer += l.substring(startY, endY + 1);
+            if (x !== end.x) { buffer += '\n'; }
+        }
+
+        return buffer;
     }
 
     undo() {
@@ -76,11 +147,10 @@ class File {
         const { status, afterPos, char } = params;
 
         this.timeMachineIdx--;
-        this.x = afterPos.x;
-        this.y = afterPos.y;
+        this._setPosition(afterPos);
 
-        if (status === ADD) { this._removeChar(); }
-        if (status === REMOVE) { this._addChar(char); }
+        if (status === timeMachineStatus.ADD) { this._removeChar(); }
+        if (status === timeMachineStatus.REMOVE) { this._addChar(char); }
     }
 
     redo() {
@@ -90,57 +160,72 @@ class File {
         const { status, prevPos, char } = params;
 
         this.timeMachineIdx++;
-        this.x = prevPos.x;
-        this.y = prevPos.y;
+        this._setPosition(prevPos);
 
-        if (status === ADD) { this._addChar(char); }
-        if (status === REMOVE) { this._removeChar(); }
+        if (status === timeMachineStatus.ADD) { this._addChar(char); }
+        if (status === timeMachineStatus.REMOVE) { this._removeChar(); }
     }
 
     _addTimeMachine(status, prevPos, char) {
-        const afterPos = { x: this.x, y: this.y };
+        const afterPos = this.position();
         this.timeMachine.splice(this.timeMachineIdx);
         this.timeMachine.push({ status, prevPos, afterPos, char });
         this.timeMachineIdx = this.timeMachine.length;
     }
 
     _removeChar() {
-        const l = this.lines[this.x];
+        const p = this.position();
+        const l = this.lines[p.x];
 
-        if (this.y === 0) {
-            if (this.x === 0) { return null; }
+        if (p.y === 0) {
+            if (p.x === 0) { return null; }
 
-            const pl = this.lines[this.x - 1];
-            this.y = pl.length;
-            this.lines.splice(this.x, 1);
-            this.x--;
-            this.lines[this.x] = pl + l;
+            const pl = this.lines[p.x - 1];
+
+            p.y = pl.length;
+            this.lines.splice(p.x, 1);
+            p.x--;
+            this.lines[p.x] = pl + l;
+
+            this._setPosition(p);
+
             return '\n';
         }
 
-        const removed = l[this.y - 1];
-        this.lines[this.x] = l.slice(0, this.y - 1) + l.slice(this.y);
-        this.y--;
+        const removed = l[p.y - 1];
+        this.lines[p.x] = l.slice(0, p.y - 1) + l.slice(p.y);
+        p.y--;
+
+        this._setPosition(p);
+
         return removed;
     }
 
     _addChar(c) {
+        const p = this.position();
+
         if (c === '\n') {
-            const l = this.lines[this.x];
-            const l1 = l.substring(0, this.y);
-            const l2 = l.substring(this.y);
-            this.lines[this.x] = l1;
-            this.x++;
-            this.y = 0;
-            this.lines.splice(this.x, 0, l2);
+            const l = this.lines[p.x];
+            const l1 = l.substring(0, p.y);
+            const l2 = l.substring(p.y);
+            this.lines[p.x] = l1;
+            p.x++;
+            p.y = 0;
+            this.lines.splice(p.x, 0, l2);
+            this._setPosition(p);
             return;
         }
 
-        const l = this.lines[this.x];
-        this.lines[this.x] = l.slice(0, this.y) + c +
-            l.slice(this.y);
-        this.y++;
+        const l = this.lines[p.x];
+        this.lines[p.x] = l.slice(0, p.y) + c +
+            l.slice(p.y);
+        p.y++;
+
+        this._setPosition(p);
     }
 }
+
+File.timeMachineStatus = timeMachineStatus;
+File.fileMode = fileMode;
 
 module.exports = File;

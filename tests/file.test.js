@@ -61,7 +61,7 @@ describe('file', () => {
             'this is a simple test!',
             'hi my friend. the current file will be used for specs',
             '\\o/'
-        ].join('\n')
+        ].join('\n');
 
         assert.equal(file.lines.join('\n'), finalText);
 
@@ -76,5 +76,27 @@ describe('file', () => {
         }
 
         assert.equal(file.lines.join('\n'), finalText);
+    });
+
+    it('selection', async() => {
+        file.goto({ x: 0, y: 1 });
+        file.setMode(File.fileMode.SELECT);
+        file.goto({ x: 2, y: 6 });
+
+        const selection = [
+            'his is a simple test!',
+            '',
+            'the cur'
+        ].join('\n');
+
+        assert.equal(file.selection(), selection);
+    });
+
+    it('inverted selection', async() => {
+        file.goto({ x: 0, y: 6 });
+        file.setMode(File.fileMode.SELECT);
+        file.goto({ x: 0, y: 1 });
+
+        assert.equal(file.selection(), 'his is');
     });
 });
