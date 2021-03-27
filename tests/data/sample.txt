@@ -1,0 +1,4 @@
+this is a simple test!
+
+the current file will be used for specs
+\o/
