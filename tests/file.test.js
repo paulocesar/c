@@ -99,4 +99,16 @@ describe('file', () => {
 
         assert.equal(file.selection(), 'his is');
     });
+
+    it('line to words', async() => {
+        console.log(file.lineToWords({ x: 0, y: 0 }));
+        console.log(file.lineToWords({ x: 2, y: 11 }));
+        console.log(file.lines);
+    });
+
+    it.only('get near words', async() => {
+        console.log(file.getNearWords({ x: 0, y: 0 }));
+        console.log(file.getNearWords({ x: 2, y: 11 }));
+        console.log(file.lines);
+    });
 });

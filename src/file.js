@@ -223,6 +223,76 @@ class File {
 
         this._setPosition(p);
     }
+
+    getNearWords(pos) {
+        const indexes = this.getNearLineIndexes(pos.x);
+
+        const prevLine = this.lineToWords({ x: indexes.prev, y: 0 });
+        const currLine = this.lineToWords(pos);
+        const nextLine = this.lineToWords({ x: indexes.next, y: 0 });
+
+        return { prevLine, currLine, nextLine };
+    }
+
+    getNearLineIndexes(x) {
+        const indexes = { prev: null, next: null };
+
+        let idxPrev = x - 1;
+        let idxNext = x + 1;
+
+        while (1) {
+            if (indexes.prev === null && this.lines[idxPrev]) {
+                indexes.prev = idxPrev;
+            }
+
+            if (indexes.next === null && this.lines[idxNext]) {
+                indexes.next = idxNext;
+            }
+
+            if (indexes.prev === null) { idxPrev--; }
+            if (indexes.next === null) { idxNext++; }
+
+            const isDone = (idxPrev < 0 || indexes.prev !== null) &&
+                (idxNext >= this.lines.length || indexes.next !== null);
+
+            if (isDone) { return indexes; }
+        }
+    }
+
+    lineToWords(pos) {
+        const line = this.lines[pos.x];
+        const words = [ ];
+
+        if (!line) { return words; }
+
+        const rgxWord = /[\w]/;
+        const rgxWhitespace = /[\s]/;
+        let word = null;
+        let wordId = 0;
+
+        for (const prop in line) {
+            const idx = Number(prop);
+            const c = line[idx];
+
+            if (word && rgxWord.test(c)) {
+                word.end = idx;
+                word.text += c;
+            } else {
+                word = null;
+
+                if (!rgxWhitespace.test(c) && !word) {
+                    word = { begin: idx, end: idx, text: c };
+                    words.push(word);
+                }
+            }
+
+            if (idx === pos.y) {
+                wordId = Math.max(0, words.length - 1);
+            }
+        }
+
+        return { lineId: pos.x, wordId, words };
+    }
 }
 
 File.timeMachineStatus = timeMachineStatus;
