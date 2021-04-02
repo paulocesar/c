@@ -225,13 +225,29 @@ class File {
     }
 
     getNearWords(pos) {
+        const d = this.getNearLines(pos);
+
+        let curr = d.curr && d.curr.words[d.curr.wordId];
+        let prev = d.curr && d.curr.words[d.curr.wordId - 1];
+        let next = d.curr && d.curr.words[d.curr.wordId + 1];
+
+        if (!prev) {
+            prev = d.prev && d.prev.words[d.prev.words.length - 1];
+        }
+
+        if (!next) { next = d.next && d.next.words[0]; }
+
+        return { prev, curr, next };
+    }
+
+    getNearLines(pos) {
         const indexes = this.getNearLineIndexes(pos.x);
 
-        const prevLine = this.lineToWords({ x: indexes.prev, y: 0 });
-        const currLine = this.lineToWords(pos);
-        const nextLine = this.lineToWords({ x: indexes.next, y: 0 });
+        const prev = this.lineToWords({ x: indexes.prev, y: 0 });
+        const curr = this.lineToWords(pos);
+        const next = this.lineToWords({ x: indexes.next, y: 0 });
 
-        return { prevLine, currLine, nextLine };
+        return { prev, curr, next };
     }
 
     getNearLineIndexes(x) {
@@ -261,10 +277,10 @@ class File {
 
     lineToWords(pos) {
         const line = this.lines[pos.x];
+
+        if (!line) { return null; }
+
         const words = [ ];
-
-        if (!line) { return words; }
-
         const rgxWord = /[\w]/;
         const rgxWhitespace = /[\s]/;
         let word = null;
@@ -283,12 +299,17 @@ class File {
                 if (!rgxWhitespace.test(c) && !word) {
                     word = { begin: idx, end: idx, text: c };
                     words.push(word);
+                    if (!rgxWord.test(c)) { word = null; }
                 }
             }
 
             if (idx === pos.y) {
                 wordId = Math.max(0, words.length - 1);
             }
+        }
+
+        if (pos.y > line.length) {
+            wordId = Math.max(words.length - 1, 0);
         }
 
         return { lineId: pos.x, wordId, words };

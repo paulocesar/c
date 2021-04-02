@@ -100,15 +100,34 @@ describe('file', () => {
         assert.equal(file.selection(), 'his is');
     });
 
-    it('line to words', async() => {
-        console.log(file.lineToWords({ x: 0, y: 0 }));
-        console.log(file.lineToWords({ x: 2, y: 11 }));
-        console.log(file.lines);
-    });
+    it('get near words', async() => {
+        const line0 = file.getNearWords({ x: 0, y: 0 });
+        const line1 = file.getNearWords({ x: 1, y: 0 });
+        const line2 = file.getNearWords({ x: 2, y: 11 });
+        const line3 = file.getNearWords({ x: 3, y: 11 });
 
-    it.only('get near words', async() => {
-        console.log(file.getNearWords({ x: 0, y: 0 }));
-        console.log(file.getNearWords({ x: 2, y: 11 }));
-        console.log(file.lines);
+        const results = { line0, line1, line2, line3 };
+        assert.deepEqual(results, {
+            line0: {
+                prev: null,
+                curr: { begin: 0, end: 3, text: 'this' },
+                next: { begin: 5, end: 6, text: 'is' }
+            },
+            line1: {
+                prev: { begin: 21, end: 21, text: '!' },
+                curr: null,
+                next: { begin: 0, end: 2, text: 'the' }
+            },
+            line2: {
+                prev: { begin: 0, end: 2, text: 'the' },
+                curr: { begin: 4, end: 10, text: 'current' },
+                next: { begin: 12, end: 15, text: 'file' }
+            },
+            line3: {
+                prev: { begin: 1, end: 1, text: 'o' },
+                curr: { begin: 2, end: 2, text: '/' },
+                next: null
+            }
+        });
     });
 });
