@@ -314,6 +314,26 @@ class File {
 
         return { lineId: pos.x, wordId, words };
     }
+
+    find(term, insensitive = false) {
+        const rgx = new RegExp(term, `${insensitive ? 'i' : ''}g`);
+        const results = [ ];
+        for (const x in this.lines) {
+            const l = this.lines[x];
+            if (!l) { continue; }
+
+            let res = null;
+            while(res = rgx.exec(l)) {
+                results.push({
+                    x,
+                    begin: res.index,
+                    end: res.index + (res[0].length - 1),
+                    result: res[0]
+                });
+            }
+        }
+        return results;
+    }
 }
 
 File.timeMachineStatus = timeMachineStatus;

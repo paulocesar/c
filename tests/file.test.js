@@ -130,4 +130,14 @@ describe('file', () => {
             }
         });
     });
+
+    it('find', () => {
+        assert.deepEqual(file.find('is'), [
+            { x: 0, begin: 2, end: 3, result: 'is' },
+            { x: 0, begin: 5, end: 6, result: 'is' }
+        ]);
+        assert.deepEqual(file.find('u[\\w]e'), [
+            { x: 2, begin: 25, end: 27, result: 'use' }
+        ]);
+    });
 });
