@@ -297,7 +297,7 @@ class File {
                 word = null;
 
                 if (!rgxWhitespace.test(c) && !word) {
-                    word = { begin: idx, end: idx, text: c };
+                    word = { x: pos.x, begin: idx, end: idx, text: c };
                     words.push(word);
                     if (!rgxWord.test(c)) { word = null; }
                 }
@@ -328,11 +328,23 @@ class File {
                     x,
                     begin: res.index,
                     end: res.index + (res[0].length - 1),
-                    result: res[0]
+                    text: res[0]
                 });
             }
         }
         return results;
+    }
+
+    replace(find, replacement) {
+        for(const f of [].concat(find)) {
+            const x = f.x;
+            const y = f.end + 1;
+            const len = f.text.length;
+            this.goto({ x, y });
+
+            const input = `${'\b'.repeat(len)}${replacement}`;
+            this.input(input);
+        }
     }
 }
 

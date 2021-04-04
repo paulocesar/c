@@ -110,22 +110,22 @@ describe('file', () => {
         assert.deepEqual(results, {
             line0: {
                 prev: null,
-                curr: { begin: 0, end: 3, text: 'this' },
-                next: { begin: 5, end: 6, text: 'is' }
+                curr: { x: 0, begin: 0, end: 3, text: 'this' },
+                next: { x: 0, begin: 5, end: 6, text: 'is' }
             },
             line1: {
-                prev: { begin: 21, end: 21, text: '!' },
+                prev: { x: 0, begin: 21, end: 21, text: '!' },
                 curr: null,
-                next: { begin: 0, end: 2, text: 'the' }
+                next: { x: 2, begin: 0, end: 2, text: 'the' }
             },
             line2: {
-                prev: { begin: 0, end: 2, text: 'the' },
-                curr: { begin: 4, end: 10, text: 'current' },
-                next: { begin: 12, end: 15, text: 'file' }
+                prev: { x: 2, begin: 0, end: 2, text: 'the' },
+                curr: { x: 2, begin: 4, end: 10, text: 'current' },
+                next: { x: 2, begin: 12, end: 15, text: 'file' }
             },
             line3: {
-                prev: { begin: 1, end: 1, text: 'o' },
-                curr: { begin: 2, end: 2, text: '/' },
+                prev: { x: 3, begin: 1, end: 1, text: 'o' },
+                curr: { x: 3, begin: 2, end: 2, text: '/' },
                 next: null
             }
         });
@@ -133,11 +133,25 @@ describe('file', () => {
 
     it('find', () => {
         assert.deepEqual(file.find('is'), [
-            { x: 0, begin: 2, end: 3, result: 'is' },
-            { x: 0, begin: 5, end: 6, result: 'is' }
+            { x: 0, begin: 2, end: 3, text: 'is' },
+            { x: 0, begin: 5, end: 6, text: 'is' }
         ]);
         assert.deepEqual(file.find('u[\\w]e'), [
-            { x: 2, begin: 25, end: 27, result: 'use' }
+            { x: 2, begin: 25, end: 27, text: 'use' }
         ]);
+    });
+
+    it('replace', () => {
+        file.replace(file.find('is'), 'OK');
+        file.replace(file.find('u[\\w]e'), 'DONE');
+
+        const expected = [
+            'thOK OK a simple test!',
+            '',
+            'the current file will be DONEd for specs',
+            '\\o/'
+        ].join('\n');
+
+        assert.equal(file.lines.join('\n'), expected);
     });
 });
