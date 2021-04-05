@@ -72,10 +72,7 @@ class File {
     }
 
     position() {
-        return {
-            x: this._x, y: this._y,
-            sx: this._sx, sy: this._sy
-        };
+        return { x: this._x, y: this._y, sx: this._sx, sy: this._sy };
     }
 
     _setPosition(pos) {

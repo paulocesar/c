@@ -12,8 +12,8 @@ class View {
         this._y = params.y || 0;
         this._beginX = 0;
         this._beginY = 0;
-        this._endX = this.height;
-        this._endY = this.width;
+        this._endX = this.height - 1;
+        this._endY = this.width - 1;
 
         this.computePosition();
     }
@@ -28,6 +28,29 @@ class View {
         if (!this.height || this.height < 1) {
             throw new Error(`Bad height '${this.height}'`);
         }
+    }
+
+    goto(pos) {
+        if (pos.x < 0 || pos.x > this.file.lines.length - 1) {
+            return false;
+        }
+
+        if (pos.y < 0 || pos.y > this.file.lines[pos.x].length) {
+            return false;
+        }
+
+        this._setPosition(pos);
+        this.computePosition();
+        return true;
+    }
+
+    _setPosition(pos) {
+        this._x = pos.x;
+        this._y = pos.y;
+    }
+
+    position() {
+        return { x: this._x, y: this._y, };
     }
 
     debug() {
@@ -50,10 +73,10 @@ class View {
     isCursorInView() {
         const preCol = this.preColumnLength();
 
-        return this._x >= (this._beginX + this.offset) &&
-            this._x <= (this._endX - this.offset) &&
-            this._y >= this._beginY &&
-            this._y <= (this._endY - preCol);
+        return this._x > (this._beginX + this.offset) &&
+            this._x < (this._endX - this.offset) &&
+            this._y > this._beginY &&
+            this._y < (this._endY - preCol);
     }
 
     computePosition() {
@@ -65,7 +88,7 @@ class View {
 
         let endX = this._endX - this.offset;
         if (this._x > endX) {
-            const ox = (this._x - beginX);
+            const ox = (this._x - endX);
             this._beginX += ox;
             this._endX += ox;
             if (this._endX > this.file.lines.length - 1) {
@@ -77,13 +100,41 @@ class View {
         let beginX = this._beginX + this.offset;
         if (this._x < beginX) {
             const ox = (this._x - beginX);
-            this._beginX -= ox;
-            this._endX -= ox;
+            this._beginX += ox;
+            this._endX += ox;
         }
 
         if (this._beginX < 0) {
             this._beginX = 0;
-            this._endX = this.height;
+            this._endX = this.height - 1;
+        }
+
+        const line = this.file.lines[this._x];
+        if (!line) {
+            this._beginY = 0;
+            this._endY = this.width - 1;
+            return;
+        }
+
+        if (this._y > this._endY) {
+            const oy = (this._y - this._endY);
+            this._beginY += oy;
+            this._endY += oy;
+            if (this._endY > line.length - 1) {
+                this._endY = line.length - 1;
+                this._beginY = this._endY - this.width;
+            }
+        }
+
+        if (this._y < this._beginY) {
+            const oy = (this._y - this._beginY);
+            this._beginX += oy;
+            this._endY += oy;
+        }
+
+        if (this._beginY < 0) {
+            this._beginY = 0;
+            this._endY = this.width - 1;
         }
     }
 
@@ -99,7 +150,7 @@ class View {
 
         const lines = [ ];
 
-        for (let x = this._beginX; x < this._endX; x++) {
+        for (let x = this._beginX; x <= this._endX; x++) {
             let line = isGoodCol ? `${' '.repeat(preCol)}${x} `
                 .slice(-1 * preCol) : '';
 
@@ -110,7 +161,7 @@ class View {
                 continue;
             }
 
-            for (let y = this._beginY; y < this._endY - preCol; y++) {
+            for (let y = this._beginY; y <= this._endY - preCol; y++) {
                 line += fl[y] || ' ';
             }
 

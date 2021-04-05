@@ -25,4 +25,22 @@ describe('view', () => {
             '2 the cu'
         ].join('\n'));
     });
+
+    it('render view line 2', () => {
+        view.goto({ x: 2, y: 0 });
+        assert.equal(view.render(), [
+            '1       ',
+            '2 the cu',
+            '3 \\o/   '
+        ].join('\n'));
+    });
+
+    it('render view line end', () => {
+        view.goto({ x: 2, y: 9 });
+        assert.equal(view.render(), [
+            '1       ',
+            '2 e curr',
+            '3 /     '
+        ].join('\n'));
+    });
 });
