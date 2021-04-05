@@ -50,7 +50,11 @@ class View {
     }
 
     position() {
-        return { x: this._x, y: this._y, };
+        return {
+            x: this._x, y: this._y,
+            begin: { x: this._beginX, y: this._beginY },
+            end: { x: this._endX, y: this._endY }
+        };
     }
 
     debug() {
@@ -60,6 +64,7 @@ class View {
             width: this.width,
             height: this.height,
             offset: this.offset,
+            position: this.position(),
             view
         })
 
