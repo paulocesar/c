@@ -3,7 +3,7 @@ const Display = require('./src/display');
 const keyboard = require('./src/keyboard');
 
 
-function main() {
+async function main() {
     const display = new Display();
 
     function terminalFinish(status = 0) {
@@ -27,7 +27,7 @@ function main() {
         display.refresh();
     });
 
-    display.startup();
+    await display.startup();
 }
 
 main();

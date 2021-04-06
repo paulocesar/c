@@ -148,7 +148,7 @@ class View {
         return String(maxX).length + 1;
     }
 
-    render() {
+    renderArray() {
         let preCol = this.preColumnLength();
         const isGoodCol = preCol < (this.width + 4);
         if (!isGoodCol) { preCol = 0; }
@@ -172,7 +172,11 @@ class View {
 
             lines.push(line);
         }
-        return lines.join('\n');
+        return lines;
+    }
+
+    render() {
+        return this.renderArray().join('\n');
     }
 }
 
