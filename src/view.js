@@ -1,3 +1,4 @@
+const ansi = require('./ansi-escape-codes');
 
 class View {
     constructor(params) {
@@ -159,6 +160,8 @@ class View {
             let line = isGoodCol ? `${' '.repeat(preCol)}${x} `
                 .slice(-1 * preCol) : '';
 
+            line = `${ansi.settings.lineCount}${line}${ansi.reset}`;
+
             const fl = this.file.lines[x];
             if (fl === undefined) {
                 line += '~';
@@ -167,12 +170,30 @@ class View {
             }
 
             for (let y = this._beginY; y <= this._endY - preCol; y++) {
-                line += fl[y] || ' ';
+
+                line += this.applyModifieds(x, y, fl[y] || ' ');
             }
 
             lines.push(line);
         }
         return lines;
+    }
+
+    applyModifieds(x, y, char) {
+        let prefix = '';
+        let suffix = '';
+
+        if (y === 80) {
+            prefix = ansi.settings.line80;
+            suffix = ansi.reset;
+        }
+
+        if (this._x === x && this._y === y) {
+            prefix = ansi.settings.cursor;
+            suffix = ansi.reset;
+        }
+
+        return `${prefix}${char}${suffix}`;
     }
 
     render() {
