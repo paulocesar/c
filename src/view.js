@@ -3,22 +3,18 @@ const ansi = require('./ansi-escape-codes');
 class View {
     constructor(params) {
         this.file = params.file;
-        this.width = params.width;
-        this.height = params.height;
         this.offset = params.offset || 0;
         this.hidePreColumn = params.hidePreColumn || false;
         this.hideFileInfo = params.hideFileInfo || false;
-
-        this.validate();
 
         this._x = params.x || 0;
         this._y = params.y || 0;
         this._beginX = 0;
         this._beginY = 0;
-        this._endX = this.getTextHeight() - 1;
-        this._endY = this.getTextWidth() - 1;
 
-        this.computePosition();
+        this.resize(params.height, params.width);
+
+        this.validate();
     }
 
     getTextHeight() {
@@ -26,16 +22,16 @@ class View {
     }
 
     getTextWidth() {
-        return this.width - this.preColumnLength();
+        return this.width - this.preColumnLength() - 1;
     }
 
     resize(height, width) {
-        const ox = this._endX - this._beginX;
-        const oy = this._endY - this._beginY;
-        this._endX += (this.getTextHeight() - ox);
-        this._endY += (this.getTextWidth() - oy) - 1;
         this.height = height;
         this.width = width;
+        this._beginX = 0;
+        this._beginY = 0;
+        this._endX = this.getTextHeight();
+        this._endY = this.getTextWidth();
         this.computePosition();
     }
 
@@ -117,7 +113,7 @@ class View {
         if (this._x > endX) {
             const ox = (this._x - endX);
             this._beginX += ox;
-            this._endX += ox;
+            this._endX = this._beginX + (height - 1);
             if (this._endX > this.file.lines.length - 1) {
                 this._endX = this.file.lines.length - 1;
                 this._beginX = this._endX - height;
@@ -137,10 +133,10 @@ class View {
         }
 
         const line = this.file.lines[this._x];
-        const width = this.getTextWidth() - 1;
+        const width = this.getTextWidth();
         if (!line) {
             this._beginY = 0;
-            this._endY = width - 1;
+            this._endY = width;
             return;
         }
 
@@ -148,21 +144,21 @@ class View {
             const oy = (this._y - this._endY);
             this._beginY += oy;
             this._endY += oy;
-            if (this._endY > line.length - 1) {
-                this._endY = line.length - 1;
+            if (this._endY > line.length) {
+                this._endY = line.length;
                 this._beginY = this._endY - width;
             }
         }
 
         if (this._y < this._beginY) {
             const oy = (this._y - this._beginY);
-            this._beginX += oy;
+            this._beginY += oy;
             this._endY += oy;
         }
 
         if (this._beginY < 0) {
             this._beginY = 0;
-            this._endY = width - 1;
+            this._endY = width;
         }
     }
 

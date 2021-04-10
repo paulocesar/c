@@ -22,7 +22,7 @@ class Display {
         this.editor = await this.createTest();
         this.commandEditor = new CommandEditor(this.maxRows);
         this.setCommandMessage();
-        this.refresh();
+        this.resize();
     }
 
     async createTest() {
