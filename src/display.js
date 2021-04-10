@@ -1,5 +1,6 @@
 const readline = require('readline');
 const Editor = require('./editor');
+const CommandEditor = require('./command-editor');
 const File = require('./file');
 
 class Display {
@@ -18,6 +19,7 @@ class Display {
 
         this.updateSize();
         this.editor = await this.createTest();
+        this.commandEditor = new CommandEditor(this.maxRows);
         this.refresh();
     }
 
@@ -32,8 +34,8 @@ class Display {
         const e = new Editor({
             file,
             x: 0, y:0,
+            height: this.maxRows - 2,
             width: this.maxCols,
-            height: this.maxRows,
             offset: 1
         });
 
@@ -58,14 +60,18 @@ class Display {
 
     resize() {
         this.updateSize();
-        // TODO: resize all editors
+
+        this.editor.resize(this.maxRows - 2, this.maxCols);
+        this.commandEditor.resize(this.maxCols);
+
         this.clear();
         this.refresh();
     }
 
     refresh() {
         // TODO: transform multiple views/grids into an array of lines
-        this.render(this.editor.view.renderArray());
+        this.render(this.editor.render().concat(
+            this.commandEditor.render()));
     }
 
     render(lines) {
@@ -77,6 +83,15 @@ class Display {
         }
 
         this.renderedLines = lines;
+    }
+
+    processKey(name, char, key) {
+        this.commandEditor.message(name);
+        if (name === 'h') { this.editor.move({ x: 0, y: -1 }); }
+        if (name === 'j') { this.editor.move({ x: 1, y: 0 }); }
+        if (name === 'k') { this.editor.move({ x: -1, y: 0 }); }
+        if (name === 'l') { this.editor.move({ x: 0, y: 1 }); }
+        this.refresh();
     }
 }
 

@@ -1,14 +1,14 @@
 const fs = require('fs');
 const readline = require('readline');
 
-const timeMachineStatus = { ADD: 0, REMOVE: 1 };
-const fileMode = { INPUT: 0, READ: 1, SELECT: 2 };
+const timeMachineStatus = { add: 0, remove: 1 };
+const mode = { readonly: 0, input: 1, select: 2 };
 
 class File {
     constructor(filepath) {
         this.filepath = filepath;
 
-        this._mode = fileMode.INPUT;
+        this._mode = mode.input;
 
         this._x = 0;
         this._y = 0;
@@ -23,7 +23,7 @@ class File {
     }
 
     setMode(m) {
-        if (!Object.values(fileMode).includes(m)) {
+        if (!Object.values(mode).includes(m)) {
             throw new Error(`invalid file mode ${m}`);
         }
         this._mode = m;
@@ -62,7 +62,7 @@ class File {
             return false;
         }
 
-        if (this._mode === fileMode.SELECT) {
+        if (this._mode === mode.select) {
             this._setSelectPosition(pos);
             return true;
         }
@@ -86,19 +86,19 @@ class File {
     }
 
     input(chars) {
-        if (!this._mode === fileMode.INPUT) { return; }
+        if (this._mode !== mode.input) { return; }
 
         for (const c of chars) {
             const pos = this.position();
             if (c === '\b') {
                 const removed = this._removeChar();
                 if (removed === null) { continue; }
-                this._addTimeMachine(timeMachineStatus.REMOVE, pos, removed);
+                this._addTimeMachine(timeMachineStatus.remove, pos, removed);
                 continue;
             }
 
             this._addChar(c);
-            this._addTimeMachine(timeMachineStatus.ADD, pos, c);
+            this._addTimeMachine(timeMachineStatus.add, pos, c);
         }
     }
 
@@ -146,8 +146,8 @@ class File {
         this.timeMachineIdx--;
         this._setPosition(afterPos);
 
-        if (status === timeMachineStatus.ADD) { this._removeChar(); }
-        if (status === timeMachineStatus.REMOVE) { this._addChar(char); }
+        if (status === timeMachineStatus.add) { this._removeChar(); }
+        if (status === timeMachineStatus.remove) { this._addChar(char); }
     }
 
     redo() {
@@ -159,8 +159,8 @@ class File {
         this.timeMachineIdx++;
         this._setPosition(prevPos);
 
-        if (status === timeMachineStatus.ADD) { this._addChar(char); }
-        if (status === timeMachineStatus.REMOVE) { this._removeChar(); }
+        if (status === timeMachineStatus.add) { this._addChar(char); }
+        if (status === timeMachineStatus.remove) { this._removeChar(); }
     }
 
     _addTimeMachine(status, prevPos, char) {
@@ -346,6 +346,6 @@ class File {
 }
 
 File.timeMachineStatus = timeMachineStatus;
-File.fileMode = fileMode;
+File.mode = mode;
 
 module.exports = File;

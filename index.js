@@ -22,9 +22,7 @@ async function main() {
 
         if (name === 'ctrl-z') { terminalFinish(); }
 
-        // TODO keyboard actions
-
-        display.refresh();
+        display.processKey(name, char, key);
     });
 
     await display.startup();

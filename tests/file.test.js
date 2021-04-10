@@ -80,7 +80,7 @@ describe('file', () => {
 
     it('selection', async() => {
         file.goto({ x: 0, y: 1 });
-        file.setMode(File.fileMode.SELECT);
+        file.setMode(File.mode.select);
         file.goto({ x: 2, y: 6 });
 
         const selection = [
@@ -94,7 +94,7 @@ describe('file', () => {
 
     it('inverted selection', async() => {
         file.goto({ x: 0, y: 6 });
-        file.setMode(File.fileMode.SELECT);
+        file.setMode(File.mode.select);
         file.goto({ x: 0, y: 1 });
 
         assert.equal(file.selection(), 'his is');

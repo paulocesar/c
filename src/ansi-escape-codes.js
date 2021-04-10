@@ -45,7 +45,8 @@ const settings = {
     selection: build(background.blue, bright, foreground.white),
     line80: build(bright, foreground.red),
     lineCount: foreground.yellow,
-    findResults: build(background.magenta, bright, foreground.white)
+    findResults: build(background.magenta, bright, foreground.white),
+    fileInfo: build(background.cyan, bright, foreground.white)
 };
 
 module.exports = {
