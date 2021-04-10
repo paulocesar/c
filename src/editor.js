@@ -1,6 +1,11 @@
 const View = require('./view');
 
 const mode = { navigate: 0, insert: 1, select: 2 };
+const modeById = { };
+
+for (let [ name, id ] of Object.entries(mode)) {
+    modeById[id] = name;
+}
 
 class Editor {
     constructor(params = { }) {
@@ -18,6 +23,8 @@ class Editor {
         });
     }
 
+    getModeName() { return modeById[this.mode]; }
+
     move(pos) {
         const c = this.view.position();
         this.goto({ x: c.x + pos.x, y: c.y + pos.y });
@@ -28,6 +35,11 @@ class Editor {
         this.view.goto(pos);
     }
 
+    input(chars) {
+        this.file.input(chars);
+        this.view.goto(this.file.position());
+    }
+
     resize(height, width) {
         this.view.resize(height, width);
     }
@@ -36,5 +48,6 @@ class Editor {
 }
 
 Editor.mode = mode;
+Editor.modeById = modeById;
 
 module.exports = Editor;

@@ -203,8 +203,9 @@ class View {
 
         if (!this.hideFileInfo) {
             let line = ansi.settings.fileInfo;
+            const filename = ` ${this.file.filepath.split('/').pop() || '~'}`;
             for (let y = 0; y < this.width; y++) {
-                line += this.file.filepath[y] || ' ';
+                line += filename[y] || ' ';
             }
             line += ansi.reset;
             lines.push(line);

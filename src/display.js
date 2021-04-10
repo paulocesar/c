@@ -2,6 +2,7 @@ const readline = require('readline');
 const Editor = require('./editor');
 const CommandEditor = require('./command-editor');
 const File = require('./file');
+const keyboard = require('./keyboard');
 
 class Display {
     constructor(filepath) {
@@ -20,6 +21,7 @@ class Display {
         this.updateSize();
         this.editor = await this.createTest();
         this.commandEditor = new CommandEditor(this.maxRows);
+        this.setCommandMessage();
         this.refresh();
     }
 
@@ -85,12 +87,16 @@ class Display {
         this.renderedLines = lines;
     }
 
+    setCommandMessage(...args) {
+        this.commandEditor.message([
+            this.editor.getModeName().toUpperCase()
+        ].concat(args).join(' '));
+    }
+
     processKey(name, char, key) {
-        this.commandEditor.message(name);
-        if (name === 'h') { this.editor.move({ x: 0, y: -1 }); }
-        if (name === 'j') { this.editor.move({ x: 1, y: 0 }); }
-        if (name === 'k') { this.editor.move({ x: -1, y: 0 }); }
-        if (name === 'l') { this.editor.move({ x: 0, y: 1 }); }
+        this.setCommandMessage(name, JSON.stringify(char), JSON.stringify(key));
+        keyboard.process(this, name, char, key);
+        this.setCommandMessage(name, JSON.stringify(char), JSON.stringify(key));
         this.refresh();
     }
 }

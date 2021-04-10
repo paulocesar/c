@@ -1,3 +1,5 @@
+const Editor = require('./editor');
+
 function parse(char, key) {
     let prefix = '';
 
@@ -23,5 +25,51 @@ function parse(char, key) {
     return sequence || name || null;
 }
 
-const keyboard = { parse };
+const basicNavigation = {
+    left(d) { d.editor.move({ x: 0, y: -1 }); },
+    down(d) { d.editor.move({ x: 1, y: 0 }); },
+    up(d) { d.editor.move({ x: -1, y: 0 }); },
+    right(d) { d.editor.move({ x: 0, y: 1 }); }
+}
+
+basicNavigation.h = basicNavigation.left
+basicNavigation.j = basicNavigation.down
+basicNavigation.k = basicNavigation.up
+basicNavigation.l = basicNavigation.right
+
+
+const processMap = {
+    navigate: Object.assign({
+        default(d) { },
+        i(d) {
+            d.editor.mode = Editor.mode.insert;
+        }
+    }, basicNavigation),
+
+    insert: {
+        default(d, name) {
+            d.editor.input(name);
+        },
+        'ctrl-h': (d) => {
+            d.editor.mode = Editor.mode.navigate;
+        }
+    },
+
+    select: {
+        default(d) { }
+    }
+};
+
+function process(display, name, char, key) {
+    const mode = display.editor.getModeName();
+    const map = processMap[mode];
+
+    if (!map) { throw new Error(`Invalid mode`); }
+
+    const mapFn = map[name] || map.default;
+
+    mapFn(display, name, char, key);
+}
+
+const keyboard = { parse, process };
 module.exports = keyboard;
