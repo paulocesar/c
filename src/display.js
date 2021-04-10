@@ -88,9 +88,8 @@ class Display {
     }
 
     setCommandMessage(...args) {
-        this.commandEditor.message([
-            this.editor.getModeName().toUpperCase()
-        ].concat(args).join(' '));
+        this.commandEditor.setMessage.apply(this.commandEditor,
+            [ this.editor.getModeName().toUpperCase() ].concat(args));
     }
 
     processKey(name, char, key) {

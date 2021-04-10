@@ -33,7 +33,7 @@ class View {
         const ox = this._endX - this._beginX;
         const oy = this._endY - this._beginY;
         this._endX += (this.getTextHeight() - ox);
-        this._endY += (this.getTextWidth() - oy);
+        this._endY += (this.getTextWidth() - oy) - 1;
         this.height = height;
         this.width = width;
         this.computePosition();
@@ -137,7 +137,7 @@ class View {
         }
 
         const line = this.file.lines[this._x];
-        const width = this.getTextWidth();
+        const width = this.getTextWidth() - 1;
         if (!line) {
             this._beginY = 0;
             this._endY = width - 1;

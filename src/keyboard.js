@@ -37,7 +37,6 @@ basicNavigation.j = basicNavigation.down
 basicNavigation.k = basicNavigation.up
 basicNavigation.l = basicNavigation.right
 
-
 const processMap = {
     navigate: Object.assign({
         default(d) { },
@@ -57,6 +56,14 @@ const processMap = {
 
     select: {
         default(d) { }
+    },
+    command: {
+        async default(d) {
+            d.setCommandMessage('Command not found');
+            d.refresh();
+        },
+        async save(d) {
+        }
     }
 };
 

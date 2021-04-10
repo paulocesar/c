@@ -15,10 +15,27 @@ class CommandEditor extends Editor {
         this.view.resize(2, width);
     }
 
-    message(msg) {
-        return this.file.lines[0] = typeof msg === 'string' ?
-            msg : JSON.stringify(msg);
+    formatMessages(messages) {
+        return messages
+            .map((m) => typeof m === 'string' ? m : JSON.stringify(m))
+            .join(' ');
     }
+
+    setMessage(...messages) {
+        this._message = this.formatMessages(messages);
+        this.file.lines[0] = this._message;
+    }
+
+    setTempMessage(...messages) {
+        msg = this.formatMessages(messages);
+        this.file.lines[0] = msg;
+    }
+
+    revertTempMessage() {
+        this.file.lines[0] = this._message;
+    }
+
+    getMessage() { return this.file.lines[0]; }
 }
 
 module.exports = CommandEditor;
