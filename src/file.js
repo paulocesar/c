@@ -53,6 +53,10 @@ class File {
         });
     }
 
+    lineSize(x) {
+        return (this.lines[x] && this.lines[x].length) || 0;
+    }
+
     goto(pos) {
         if (pos.x < 0 || pos.x > this.lines.length - 1) {
             return false;

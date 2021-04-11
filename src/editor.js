@@ -21,18 +21,31 @@ class Editor {
             x, y, width, height, offset,
             hidePreColumn, hideFileInfo
         });
+        this._lastY = 0;
     }
 
     getModeName() { return modeById[this.mode]; }
 
     move(pos) {
         const c = this.view.position();
-        this.goto({ x: c.x + pos.x, y: c.y + pos.y });
+        const newX = c.x + pos.x;
+        let newY = pos.y ? c.y + pos.y : this._lastY;
+        const canMove = this.goto({ x: newX, y: newY });
+
+        if (canMove) {
+            if (pos.y) { this._lastY = newY; }
+            return;
+        }
+
+        if (pos.y) { return; }
+
+        newY = this.file.lineSize(newX);
+        this.goto({ x: newX, y: newY });
     }
 
     goto(pos) {
         this.file.goto(pos);
-        this.view.goto(pos);
+        return this.view.goto(pos);
     }
 
     input(chars) {

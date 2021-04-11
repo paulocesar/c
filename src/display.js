@@ -26,7 +26,7 @@ class Display {
     }
 
     async createTest() {
-        const f = require('path').resolve(__dirname, 'display.js')
+        const f = require('path').resolve(__dirname, 'display.js');
         const file = new File(f);
         await file.load();
         return this.createEditor(file);
