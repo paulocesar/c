@@ -15,14 +15,14 @@ async function main() {
 
     process.stdout.on('resize', () => display.resize());
 
-    process.stdin.on('keypress', function (char, key) {
+    process.stdin.on('keypress', async function(char, key) {
         const name = keyboard.parse(char, key);
 
         if (name === null) { return; }
 
         if (name === 'ctrl-z') { terminalFinish(); }
 
-        display.processKey(name, char, key);
+        await display.processKey(name, char, key);
     });
 
     await display.startup();

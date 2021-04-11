@@ -24,6 +24,10 @@ class Editor {
         this._lastY = 0;
     }
 
+    setFocus() { this.view.isFocused = true; }
+
+    removeFocus() { this.view.isFocused = false; }
+
     getModeName() { return modeById[this.mode]; }
 
     move(pos) {
@@ -50,6 +54,7 @@ class Editor {
 
     input(chars) {
         this.file.input(chars);
+        this._lastY = this.file.position().y;
         this.view.goto(this.file.position());
     }
 

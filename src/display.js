@@ -20,7 +20,8 @@ class Display {
 
         this.updateSize();
         this.editor = await this.createTest();
-        this.commandEditor = new CommandEditor(this.maxRows);
+        this.command = new CommandEditor(this.maxRows);
+        this.setFocus(this.editor);
         this.setCommandMessage();
         this.resize();
     }
@@ -64,16 +65,23 @@ class Display {
         this.updateSize();
 
         this.editor.resize(this.maxRows - 2, this.maxCols);
-        this.commandEditor.resize(this.maxCols);
+        this.command.resize(this.maxCols);
 
         this.clear();
         this.refresh();
     }
 
+    setFocus(display) {
+        if (this.focus) { this.focus.removeFocus(); }
+        this.previousFocus = this.focus;
+        this.focus = display;
+        this.focus.setFocus();
+    }
+
     refresh() {
         // TODO: transform multiple views/grids into an array of lines
         this.render(this.editor.render().concat(
-            this.commandEditor.render()));
+            this.command.render()));
     }
 
     render(lines) {
@@ -88,14 +96,17 @@ class Display {
     }
 
     setCommandMessage(...args) {
-        this.commandEditor.setMessage.apply(this.commandEditor,
+        this.command.setMessage.apply(this.command,
             [ this.editor.getModeName().toUpperCase() ].concat(args));
     }
 
-    processKey(name, char, key) {
-        this.setCommandMessage(name, JSON.stringify(char), JSON.stringify(key));
-        keyboard.process(this, name, char, key);
-        this.setCommandMessage(name, JSON.stringify(char), JSON.stringify(key));
+    async processKey(name, char, key) {
+        const { focus } = this;
+        if (focus.isCommand) {
+            await focus.process(this, keyboard.commands, name, char, key);
+        } else {
+            keyboard.process(this, name, char, key);
+        }
         this.refresh();
     }
 }

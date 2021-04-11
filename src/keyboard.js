@@ -14,6 +14,9 @@ function parse(char, key) {
     if (key.sequence === '\n' && key.name === 'enter') {
         return 'ctrl-j';
     }
+    if (key.sequence === '\r' && key.name === 'return') {
+        return '\n';
+    }
 
     const { sequence, name } = key;
 
@@ -40,9 +43,9 @@ basicNavigation.l = basicNavigation.right
 const processMap = {
     navigate: Object.assign({
         default(d) { },
-        i(d) {
-            d.editor.mode = Editor.mode.insert;
-        }
+        i(d) { d.editor.mode = Editor.mode.insert; },
+        '\n': (d) => { d.editor.mode = Editor.mode.insert; },
+        ':': (d) => { d.setFocus(d.command); }
     }, basicNavigation),
 
     insert: {
@@ -57,13 +60,15 @@ const processMap = {
     select: {
         default(d) { }
     },
-    command: {
-        async default(d) {
-            d.setCommandMessage('Command not found');
-            d.refresh();
-        },
-        async save(d) {
-        }
+};
+
+const commands = {
+    async default(d) {
+        d.setCommandMessage(`Command not found.`);
+        d.setFocus(d.editor);
+    },
+    async save(d) {
+        processMap.command.default(d);
     }
 };
 
@@ -78,5 +83,5 @@ function process(display, name, char, key) {
     mapFn(display, name, char, key);
 }
 
-const keyboard = { parse, process };
+const keyboard = { parse, process, commands };
 module.exports = keyboard;

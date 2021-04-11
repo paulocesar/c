@@ -11,6 +11,7 @@ class View {
         this._y = params.y || 0;
         this._beginX = 0;
         this._beginY = 0;
+        this.isFocused = false;
 
         this.resize(params.height, params.width);
 
@@ -218,7 +219,7 @@ class View {
             suffix = ansi.reset;
         }
 
-        if (this._x === x && this._y === y) {
+        if (this._x === x && this._y === y && this.isFocused) {
             prefix = ansi.settings.cursor;
             suffix = ansi.reset;
         }
