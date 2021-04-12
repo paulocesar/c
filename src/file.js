@@ -326,9 +326,8 @@ class File {
             let res = null;
             while(res = rgx.exec(l)) {
                 results.push({
-                    x,
-                    begin: res.index,
-                    end: res.index + (res[0].length - 1),
+                    begin: { x, y: res.index },
+                    end: { x, y: res.index + (res[0].length - 1) },
                     text: res[0]
                 });
             }
@@ -338,8 +337,8 @@ class File {
 
     replace(find, replacement) {
         for(const f of [].concat(find)) {
-            const x = f.x;
-            const y = f.end + 1;
+            const x = f.end.x;
+            const y = f.end.y + 1;
             const len = f.text.length;
             this.goto({ x, y });
 

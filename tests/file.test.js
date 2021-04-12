@@ -133,11 +133,11 @@ describe('file', () => {
 
     it('find', () => {
         assert.deepEqual(file.find('is'), [
-            { x: 0, begin: 2, end: 3, text: 'is' },
-            { x: 0, begin: 5, end: 6, text: 'is' }
+            { begin: { x: 0, y: 2 }, end: { x: 0, y: 3 }, text: 'is' },
+            { begin: { x: 0, y: 5 }, end: { x: 0, y: 6 }, text: 'is' },
         ]);
         assert.deepEqual(file.find('u[\\w]e'), [
-            { x: 2, begin: 25, end: 27, text: 'use' }
+            { begin: { x: 2, y: 25 }, end: { x: 2, y: 27 }, text: 'use' },
         ]);
     });
 

@@ -17,6 +17,7 @@ describe('view', () => {
         file = new File(path.resolve(__dirname, './data/sample.txt'));
         await file.load();
         view = new View({ file, width, height, offset, hideFileInfo });
+        view.isFocused = true;
     });
 
     it('render view', () => {

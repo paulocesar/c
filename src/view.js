@@ -11,7 +11,7 @@ class View {
         this._y = params.y || 0;
         this._beginX = 0;
         this._beginY = 0;
-        this.isFocused = false;
+        this.isFocused = params.isFocused || false;
 
         this.resize(params.height, params.width);
 
