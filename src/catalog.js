@@ -83,5 +83,5 @@ function process(display, name, char, key) {
     mapFn(display, name, char, key);
 }
 
-const keyboard = { parse, process, commands };
-module.exports = keyboard;
+const catalog = { parse, process, commands };
+module.exports = catalog;

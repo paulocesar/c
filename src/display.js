@@ -2,7 +2,7 @@ const readline = require('readline');
 const Editor = require('./editor');
 const CommandEditor = require('./command-editor');
 const File = require('./file');
-const keyboard = require('./keyboard');
+const catalog = require('./catalog');
 
 class Display {
     constructor(filepath) {
@@ -103,9 +103,9 @@ class Display {
     async processKey(name, char, key) {
         const { focus } = this;
         if (focus.isCommand) {
-            await focus.process(this, keyboard.commands, name, char, key);
+            await focus.process(this, catalog.commands, name, char, key);
         } else {
-            keyboard.process(this, name, char, key);
+            catalog.process(this, name, char, key);
         }
         this.refresh();
     }

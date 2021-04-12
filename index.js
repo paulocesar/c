@@ -1,6 +1,6 @@
 const readline = require('readline');
 const Display = require('./src/display');
-const keyboard = require('./src/keyboard');
+const catalog = require('./src/catalog');
 
 
 async function main() {
@@ -16,7 +16,7 @@ async function main() {
     process.stdout.on('resize', () => display.resize());
 
     process.stdin.on('keypress', async function(char, key) {
-        const name = keyboard.parse(char, key);
+        const name = catalog.parse(char, key);
 
         if (name === null) { return; }
 
