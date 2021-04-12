@@ -1,11 +1,7 @@
 const View = require('./view');
-
-const mode = { navigate: 0, insert: 1, select: 2 };
-const modeById = { };
-
-for (let [ name, id ] of Object.entries(mode)) {
-    modeById[id] = name;
-}
+const constants = require('./constants');
+const mode = constants.viewMode;
+const modeById = constants.viewModeById;
 
 class Editor {
     constructor(params = { }) {

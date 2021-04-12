@@ -1,8 +1,8 @@
 const fs = require('fs');
 const readline = require('readline');
-
-const timeMachineStatus = { add: 0, remove: 1 };
-const mode = { readonly: 0, input: 1, select: 2 };
+const catalog = require('./catalog');
+const { timeMachineStatus, fileMode } = require('./constants');
+const mode = fileMode;
 
 class File {
     constructor(filepath) {
@@ -20,6 +20,9 @@ class File {
 
         this.timeMachine = [ ];
         this.timeMachineIdx = 0;
+
+        this.modifiers = catalog.modifiers.file
+            .filter((m) => m.canUse(this)).reverse();
     }
 
     setMode(m) {
@@ -92,6 +95,8 @@ class File {
     input(chars) {
         if (this._mode !== mode.input) { return; }
 
+        chars = this.applyModifieds(chars);
+
         for (const c of chars) {
             const pos = this.position();
             if (c === '\b') {
@@ -104,6 +109,17 @@ class File {
             this._addChar(c);
             this._addTimeMachine(timeMachineStatus.add, pos, c);
         }
+    }
+
+    applyModifieds(chars) {
+        for (const modifier of this.modifiers) {
+            modifier.beforeProcess(this, chars);
+        }
+
+        for (const modifier of this.modifiers) {
+            chars = modifier.process(this, chars);
+        }
+        return chars;
     }
 
     selectionArea() {

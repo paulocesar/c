@@ -1,4 +1,5 @@
 const ansi = require('./ansi-escape-codes');
+const catalog = require('./catalog');
 
 class View {
     constructor(params) {
@@ -6,6 +7,8 @@ class View {
         this.offset = params.offset || 0;
         this.hidePreColumn = params.hidePreColumn || false;
         this.hideFileInfo = params.hideFileInfo || false;
+        this.modifiers = catalog.modifiers.view
+            .filter((m) => m.canUse(this)).reverse();
 
         this._x = params.x || 0;
         this._y = params.y || 0;
@@ -178,6 +181,10 @@ class View {
         const preCol = this.preColumnLength();
         const lines = [ ];
 
+        for (const modifier of this.modifiers) {
+            modifier.beforeProcess(this);
+        }
+
         for (let x = this._beginX; x <= this._endX; x++) {
             let line = preCol ? `${' '.repeat(preCol)}${x} `
                 .slice(-1 * preCol) : '';
@@ -214,15 +221,11 @@ class View {
         let prefix = '';
         let suffix = '';
 
-        if (y === 80) {
-            prefix = ansi.settings.line80;
-            suffix = ansi.reset;
+        for (const modifier of this.modifiers) {
+            prefix += modifier.process(this, x, y, char);
         }
 
-        if (this._x === x && this._y === y && this.isFocused) {
-            prefix = ansi.settings.cursor;
-            suffix = ansi.reset;
-        }
+        if (prefix) { suffix = ansi.reset; }
 
         return `${prefix}${char}${suffix}`;
     }
