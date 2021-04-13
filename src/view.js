@@ -1,4 +1,3 @@
-const ansi = require('./ansi-escape-codes');
 const catalog = require('./catalog');
 
 class View {
