@@ -186,10 +186,14 @@ class View {
         }
 
         for (let x = this._beginX; x <= this._endX; x++) {
-            let line = preCol ? `${' '.repeat(preCol)}${x} `
+            let preLine = preCol ? `${' '.repeat(preCol)}${x} `
                 .slice(-1 * preCol) : '';
 
-            line = `${ansi.settings.lineCount}${line}${ansi.reset}`;
+            for (const modifier of this.modifiers) {
+                preLine = modifier.preColProcess(this, x, preLine);
+            }
+
+            let line = `${preLine}`;
 
             const fl = this.file.lines[x];
             if (fl === undefined) {
@@ -199,35 +203,24 @@ class View {
             }
 
             for (let y = this._beginY; y <= this._endY; y++) {
-                line += this.applyModifieds(x, y, fl[y] || ' ');
+                let char = fl[y] || ' ';
+                for (const modifier of this.modifiers) {
+                    char = modifier.charProcess(this, x, y, char);
+                }
+                line += char;
             }
 
             lines.push(line);
         }
 
         if (!this.hideFileInfo) {
-            let line = ansi.settings.fileInfo;
-            const filename = ` ${this.file.filepath.split('/').pop() || '~'}`;
-            for (let y = 0; y < this.width; y++) {
-                line += filename[y] || ' ';
+            let line = '';
+            for (const modifier of this.modifiers) {
+                line = modifier.fileInfoProcess(this, line);
             }
-            line += ansi.reset;
             lines.push(line);
         }
         return lines;
-    }
-
-    applyModifieds(x, y, char) {
-        let prefix = '';
-        let suffix = '';
-
-        for (const modifier of this.modifiers) {
-            prefix += modifier.process(this, x, y, char);
-        }
-
-        if (prefix) { suffix = ansi.reset; }
-
-        return `${prefix}${char}${suffix}`;
     }
 
     render() {

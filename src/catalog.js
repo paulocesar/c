@@ -87,9 +87,16 @@ function process(display, name, char, key) {
 const modifiers = {
     view: [{
         canUse(v) { return true; },
+
         beforeProcess(v) { },
-        process(v, x, y, char) {
+
+        preColProcess(v, x, preLine) {
+            return `${ansi.settings.lineCount}${preLine}${ansi.reset}`;
+        },
+
+        charProcess(v, x, y, char) {
             let prefix = '';
+            let suffix = '';
             const p = v.position();
 
             if (y === 80) {
@@ -100,7 +107,19 @@ const modifiers = {
                 prefix += ansi.settings.cursor;
             }
 
-            return prefix;
+            if (prefix) { suffix = ansi.reset; }
+
+            return `${prefix}${char}${suffix}`;
+        },
+
+        fileInfoProcess(v, line) {
+            line = ansi.settings.fileInfo;
+            const filename = ` ${v.file.filepath.split('/').pop() || '~'}`;
+            for (let y = 0; y < v.width; y++) {
+                line += filename[y] || ' ';
+            }
+            line += ansi.reset;
+            return line;
         }
     }],
     file: [{
