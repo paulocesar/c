@@ -29,8 +29,14 @@ class CommandEditor extends Editor {
     }
 
     setTempMessage(...messages) {
-        msg = this.formatMessages(messages);
+        const callback = messages.pop();
+        const msg = this.formatMessages(messages);
         this.file.lines[0] = msg;
+        const onDone = () => {
+            this.revertTempMessage();
+            callback();
+        };
+        setTimeout(onDone, 3 * 1000);
     }
 
     revertTempMessage() {
@@ -40,6 +46,10 @@ class CommandEditor extends Editor {
     getMessage() { return this.file.lines[0]; }
 
     async process(d, commands, name, char, key) {
+        if (name === '\b' && this.file.lines[1].length <= 2) {
+            return;
+        }
+
         if (name === '\n') {
             const params = this.file.lines[1].slice(2).trim().split(/\s+/g);
             const cmd = params.shift();
@@ -47,9 +57,11 @@ class CommandEditor extends Editor {
             this.file.lines[1] = prompt;
             this.goto({ x: 1, y: 2 });
             await fn.apply(commands, [ d ].concat(params));
+            d.setFocus(d.previousFocus);
+            return;
         }
 
-        if (!name || name.length > 1 || /[^\w- \b]/.test(name)) { return }
+        if (!name || name.length > 1 || /[^\w-. \b]/.test(name)) { return }
 
         this.input(name);
     }

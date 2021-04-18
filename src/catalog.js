@@ -1,3 +1,4 @@
+const path = require('path');
 const constants = require('./constants');
 const ansi = require('./ansi-escape-codes');
 
@@ -65,12 +66,41 @@ const processMap = {
 
 const commands = {
     async default(d) {
-        d.setCommandMessage(`Command not found.`);
-        d.setFocus(d.editor);
+        d.setTempCommandMessage('Command not found.');
     },
-    async save(d) {
-        processMap.command.default(d);
-    }
+
+    async save(d, filename) {
+        if (!d.previousFocus) {
+            return d.setTempCommandMessage('No focused view.');
+        }
+
+        const file = d.previousFocus.file;
+
+        filename = filename || file.filename;
+        if (!filename) {
+            return d.setTempCommandMessage('Please set a file name.');
+        }
+
+        fs.writeFileSync(path.resolve(filename), file.toText(), 'utf8');
+
+        d.setTempCommandMessage('Saved!');
+        d.setFocus(d.previousFocus);
+    },
+
+    async open(d, filename) {
+        if (!filename) {
+            return d.setTempCommandMessage('Please set a file name.');
+        }
+
+        await d.previousFocus.open(filename);
+        d.setTempCommandMessage('Opened!');
+    },
+    async find(d, term) { },
+    async replace(d, rgx, value) { },
+    async replaceall(d, rgx, value) { },
+    async split(d, filename) { },
+    async vsplit(d, filename) { },
+    async quit() { }
 };
 
 function process(display, name, char, key) {
@@ -82,6 +112,11 @@ function process(display, name, char, key) {
     const mapFn = map[name] || map.default;
 
     mapFn(display, name, char, key);
+}
+
+function isFormat(file, format) {
+    if (!file.filepath) { return false; }
+    return path.extname(file.filepath) === `.${format}`;
 }
 
 const modifiers = {
@@ -121,9 +156,23 @@ const modifiers = {
             line += ansi.reset;
             return line;
         }
+    }, {
+        canUse(v) { return isFormat(v.file, 'js'); },
+
+        beforeProcess(v) { },
+
+        preColProcess(v, x, preLine) { return preLine; },
+
+        charProcess(v, x, y, char) { return char; },
+
+        fileInfoProcess(v, line) { return line; }
     }],
     file: [{
         canUse(f) { return true; },
+        beforeProcess(f, chars) { },
+        process(f, chars) { return chars; }
+    }, {
+        canUse(f) { return isFormat(f, 'js'); },
         beforeProcess(f, chars) { },
         process(f, chars) { return chars; }
     }]

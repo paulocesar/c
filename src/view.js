@@ -196,7 +196,7 @@ class View {
 
             const fl = this.file.lines[x];
             if (fl === undefined) {
-                line += '~';
+                line += '~' + ' '.repeat(this.getTextWidth());
                 lines.push(line);
                 continue;
             }

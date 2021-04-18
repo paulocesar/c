@@ -100,6 +100,14 @@ class Display {
             [ this.editor.getModeName().toUpperCase() ].concat(args));
     }
 
+    setTempCommandMessage(...args) {
+        this.command.setTempMessage.apply(
+            this.command,
+            [ this.editor.getModeName().toUpperCase() ]
+                .concat(args).concat(() => this.refresh())
+        );
+    }
+
     async processKey(name, char, key) {
         const { focus } = this;
         if (focus.isCommand) {

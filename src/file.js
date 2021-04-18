@@ -1,8 +1,11 @@
 const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
 const catalog = require('./catalog');
 const { timeMachineStatus, fileMode } = require('./constants');
 const mode = fileMode;
+
+const fileCatalog = { };
 
 class File {
     constructor(filepath) {
@@ -25,6 +28,8 @@ class File {
             .filter((m) => m.canUse(this)).reverse();
     }
 
+    toText() { return this.lines.join('\n'); }
+
     setMode(m) {
         if (!Object.values(mode).includes(m)) {
             throw new Error(`invalid file mode ${m}`);
@@ -32,10 +37,26 @@ class File {
         this._mode = m;
     }
 
+    async open(filename) {
+        const filepath = path.resolve(filename);
+
+        const existing = fileCatalog[filepath];
+        if (existing) { return existing; }
+
+        const f = new File(filepath);
+        await f.load();
+        return f;
+    }
+
     async load() {
         this.lines = [ ];
         this.timeMachine = [ ];
         this.timeMachineIdx = 0;
+
+        if (!fs.existsSync(this.filepath)) {
+            this.lines = [ '' ];
+            return;
+        }
 
         const rl = readline.createInterface({
             input: fs.createReadStream(this.filepath),

@@ -20,6 +20,12 @@ class Editor {
         this._lastY = 0;
     }
 
+    async open(filename) {
+        this.file = await this.file.open(filename);
+        this.view.file = this.file;
+        this.goto(this.file.position());
+    }
+
     setFocus() { this.view.isFocused = true; }
 
     removeFocus() { this.view.isFocused = false; }
