@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const constants = require('./constants');
 const ansi = require('./ansi-escape-codes');
@@ -76,7 +77,7 @@ const commands = {
 
         const file = d.previousFocus.file;
 
-        filename = filename || file.filename;
+        filename = filename || file.filepath;
         if (!filename) {
             return d.setTempCommandMessage('Please set a file name.');
         }

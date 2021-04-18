@@ -2,7 +2,6 @@ const readline = require('readline');
 const Display = require('./src/display');
 const catalog = require('./src/catalog');
 
-
 async function main() {
     const display = new Display();
 
