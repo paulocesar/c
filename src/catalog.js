@@ -46,8 +46,16 @@ basicNavigation.l = basicNavigation.right;
 const processMap = {
     navigate: Object.assign({
         default(d) { },
-        i(d) { d.editor.mode = constants.viewMode.insert; },
-        '\n': (d) => { d.editor.mode = constants.viewMode.insert; },
+        i(d) {
+            d.editor.mode = constants.viewMode.insert;
+            d.setCommandMessage('');
+            d.refresh();
+        },
+        '\n': (d) => {
+            d.editor.mode = constants.viewMode.insert;
+            d.setCommandMessage('');
+            d.refresh();
+        },
         ':': (d) => { d.setFocus(d.command); }
     }, basicNavigation),
 
@@ -57,6 +65,8 @@ const processMap = {
         },
         'ctrl-h': (d) => {
             d.editor.mode = constants.viewMode.navigate;
+            d.setCommandMessage('');
+            d.refresh();
         }
     },
 
