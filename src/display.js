@@ -1,6 +1,7 @@
 const readline = require('readline');
 const Editor = require('./editor');
 const CommandEditor = require('./command-editor');
+const NotifyEditor = require('./notify-editor');
 const File = require('./file');
 const catalog = require('./catalog');
 
@@ -19,30 +20,41 @@ class Display {
         process.stdin.write('\x1B[?25l');
 
         this.updateSize();
-        this.editor = await this.createTest();
-        this.command = new CommandEditor(this.maxRows);
-        this.setFocus(this.editor);
+        await this.loadEditors();
         this.setCommandMessage();
         this.resize();
     }
 
-    async createTest() {
-        const f = require('path').resolve(__dirname, 'display.js');
-        const file = new File(f);
-        await file.load();
-        return this.createEditor(file);
+    getEditorCols() {
+        return Math.min((this.maxCols - 1) / 2);
     }
 
-    createEditor(file) {
-        const e = new Editor({
-            file,
-            x: 0, y:0,
-            height: this.maxRows - 2,
-            width: this.maxCols,
-            offset: 1
+    async loadEditors() {
+        const f = require('path').resolve(__dirname, '..', 'tmp', 'TODO.txt');
+        const file = new File(f);
+        await file.load();
+
+        this.editor = new Editor({
+            file, x: 0, y:0, offset: 1,
+            height: this.maxRows - 2, width: this.getEditorCols()
         });
 
-        return e;
+        this.setFocus(this.editor);
+
+        this.notifyEditor = new NotifyEditor({
+            x: 0, y:0, offset: 1,
+            height: this.maxRows - 2, width: this.getEditorCols()
+        });
+
+        this.command = new CommandEditor(this.maxRows);
+
+        const loadNotifications = async() => {
+            await this.notifyEditor.loadNotifications();
+            this.refresh();
+            setTimeout(loadNotifications, 5 * 60 * 1000);
+        }
+
+        loadNotifications();
     }
 
     finish() {
@@ -64,7 +76,10 @@ class Display {
     resize() {
         this.updateSize();
 
-        this.editor.resize(this.maxRows - 2, this.maxCols);
+        const editorCols = this.getEditorCols();
+
+        this.editor.resize(this.maxRows - 2, editorCols);
+        this.notifyEditor.resize(this.maxRows - 2, editorCols);
         this.command.resize(this.maxCols);
 
         this.clear();
@@ -80,7 +95,17 @@ class Display {
 
     refresh() {
         // TODO: transform multiple views/grids into an array of lines
-        this.render(this.editor.render().concat(
+
+        const editors = [ this.editor, this.notifyEditor ]
+            .map((e) => e.render());
+
+        const editorLines = [ ];
+
+        for (let l = 0; l < editors[0].length; l++) {
+            editorLines.push(editors[0][l] + '|' + editors[1][l]);
+        }
+
+        this.render(editorLines.concat(
             this.command.render()));
     }
 

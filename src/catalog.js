@@ -49,12 +49,10 @@ const processMap = {
         i(d) {
             d.editor.mode = constants.viewMode.insert;
             d.setCommandMessage('');
-            d.refresh();
         },
         '\n': (d) => {
             d.editor.mode = constants.viewMode.insert;
             d.setCommandMessage('');
-            d.refresh();
         },
         ':': (d) => { d.setFocus(d.command); }
     }, basicNavigation),
@@ -66,7 +64,6 @@ const processMap = {
         'ctrl-h': (d) => {
             d.editor.mode = constants.viewMode.navigate;
             d.setCommandMessage('');
-            d.refresh();
         }
     },
 
@@ -95,7 +92,6 @@ const commands = {
         fs.writeFileSync(path.resolve(filename), file.toText(), 'utf8');
 
         d.setTempCommandMessage('Saved!');
-        d.setFocus(d.previousFocus);
     },
 
     async open(d, filename) {
@@ -160,7 +156,8 @@ const modifiers = {
 
         fileInfoProcess(v, line) {
             line = ansi.settings.fileInfo;
-            const filename = ` ${v.file.filepath.split('/').pop() || '~'}`;
+            const filename = !v.file.filepath ? '~' :
+                ` ${v.file.filepath.split('/').pop() || '~'}`;
             for (let y = 0; y < v.width; y++) {
                 line += filename[y] || ' ';
             }
