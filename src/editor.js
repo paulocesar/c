@@ -56,12 +56,26 @@ class Editor {
 
     input(chars) {
         this.file.input(chars);
-        this._lastY = this.file.position().y;
-        this.view.goto(this.file.position());
+        this.refreshPosition();
+    }
+
+    undo() {
+        this.file.undo();
+        this.refreshPosition();
+    }
+
+    redo() {
+        this.file.redo();
+        this.refreshPosition();
     }
 
     resize(height, width) {
         this.view.resize(height, width);
+    }
+
+    refreshPosition() {
+        this._lastY = this.file.position().y;
+        this.view.goto(this.file.position());
     }
 
     render() { return this.view.renderArray(); }

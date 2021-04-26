@@ -50,18 +50,25 @@ const processMap = {
             d.editor.mode = constants.viewMode.insert;
             d.setCommandMessage('');
         },
+        a(d) {
+            d.editor.mode = constants.viewMode.insert;
+            d.editor.move({ x: 0, y: 1 });
+            d.setCommandMessage('');
+        },
         '\n': (d) => {
             d.editor.mode = constants.viewMode.insert;
             d.setCommandMessage('');
         },
-        ':': (d) => { d.setFocus(d.command); }
+        ':': (d) => { d.setFocus(d.command); },
+        u(d) { d.editor.undo(); },
+        'ctrl-r': (d) => { d.editor.redo(); }
     }, basicNavigation),
 
     insert: {
         default(d, name) {
             d.editor.input(name);
         },
-        'ctrl-h': (d) => {
+        'ctrl-x': (d) => {
             d.editor.mode = constants.viewMode.navigate;
             d.setCommandMessage('');
         }
@@ -107,7 +114,11 @@ const commands = {
     async replaceall(d, rgx, value) { },
     async split(d, filename) { },
     async vsplit(d, filename) { },
-    async quit() { }
+    async quit(d) {
+        // TODO: check for unsaved files
+        d.finish();
+        process.exit(0);
+    }
 };
 
 function process(display, name, char, key) {

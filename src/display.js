@@ -140,6 +140,7 @@ class Display {
         } else {
             catalog.process(this, name, char, key);
         }
+        this.setTempCommandMessage({ name, char, key });
         this.refresh();
     }
 }
