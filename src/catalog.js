@@ -121,7 +121,7 @@ const commands = {
     }
 };
 
-function process(display, name, char, key) {
+function processChar(display, name, char, key) {
     const mode = display.editor.getModeName();
     const map = processMap[mode];
 
@@ -197,5 +197,5 @@ const modifiers = {
     }]
 };
 
-const catalog = { parse, process, commands, modifiers };
+const catalog = { parse, process: processChar, commands, modifiers };
 module.exports = catalog;
